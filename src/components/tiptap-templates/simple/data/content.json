@@ -224,7 +224,7 @@
     {
       "type": "image",
       "attrs": {
-        "src": "/images/tiptap-ui-placeholder-image.jpg",
+        "src": "https://picsum.photos/id/237/200/300",
         "alt": "placeholder-image",
         "title": "placeholder-image"
       }

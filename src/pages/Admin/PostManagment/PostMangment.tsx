@@ -20,6 +20,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../../../components/ui/dialog";
+import { useNavigate } from "react-router-dom";
 
 // Dummy Data
 const initialPosts = [
@@ -76,6 +77,7 @@ const PostMangment = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [openPopup, setOpenPopup] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const navigate = useNavigate()
 
   // Derived state for filtering
   const filteredPosts = posts.filter((post) => {
@@ -259,6 +261,7 @@ const PostMangment = () => {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-muted-foreground hover:text-blue-600"
+                        onClick={() => navigate(`/admin/edit/${post.id}`)}
                       >
                         <Pencil className="h-4 w-4" />
                         <span className="sr-only">Edit</span>

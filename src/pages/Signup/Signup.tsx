@@ -41,10 +41,9 @@ const Signup = () => {
       const response = await api.post("/create", value);
 
       if (response?.data?.success) {
-        const { token, User } = response.data;
+        const { token } = response.data;
 
         localStorage.setItem("token", token);
-        localStorage.setItem("user_info", JSON.stringify(User));
 
         setInfo(response.data);
 

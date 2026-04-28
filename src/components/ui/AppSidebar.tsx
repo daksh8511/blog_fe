@@ -1,12 +1,28 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import UserInfo from "../../store";
 
 const AppSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = UserInfo();
 
   const menu = [
-    { name: "Dashboard", path: "/admin/dashboard" },
-    { name: "Posts", path: "/admin/posts" },
-    { name: "Create Post", path: "/admin/create" },
+    {
+      name: "Dashboard",
+      path: "/admin/dashboard",
+      match: (pathname: string) => pathname === "/admin/dashboard",
+    },
+    {
+      name: "Posts",
+      path: "/admin/posts",
+      match: (pathname: string) => pathname.startsWith("/admin/posts"),
+    },
+    {
+      name: "Create/Edit Post",
+      path: "/admin/create",
+      match: (pathname: string) =>
+        pathname === "/admin/create" || pathname.startsWith("/admin/edit"),
+    },
   ];
 
   return (
@@ -19,7 +35,7 @@ const AppSidebar = () => {
             <Link
               to={item.path}
               className={`block px-3 py-2 rounded-md transition ${
-                location.pathname === item.path
+                item.match(location.pathname)
                   ? "bg-blue-500 text-white"
                   : "hover:bg-gray-100"
               }`}
@@ -29,6 +45,18 @@ const AppSidebar = () => {
           </li>
         ))}
       </ul>
+      <Link
+        onClick={() => {
+          logout();
+          localStorage.removeItem("token");
+          localStorage.removeItem("auth-storage");
+
+          navigate("/");
+        }}
+        className={`block px-3 py-2 rounded-md transition hover:bg-gray-100 text-black `}
+      >
+        Logout
+      </Link>
     </div>
   );
 };

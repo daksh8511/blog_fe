@@ -15,9 +15,11 @@ import { useFormik } from "formik";
 import * as yup from 'yup'
 import api from "../../utils/Interceptor";
 import { toast } from "sonner";
+import UserInfo from "../../store";
 
 const Signin = () => {
   const navigate = useNavigate();
+  const {setInfo} = UserInfo()
 
   const formik = useFormik({
     initialValues : {
@@ -37,9 +39,12 @@ const Signin = () => {
 
       if(response.data.success){
         localStorage.setItem('token', response?.data?.token)
+        setInfo(response?.data)
         toast.success('Login successfully')
         navigate('/')
+        return
       }
+      toast.error('Uesr not found')
     } catch (error) {
       console.error("Error : ",error)
     }
