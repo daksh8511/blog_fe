@@ -1,9 +1,9 @@
-import Tiptap from "../../../components/Tiptap";
+import { SimpleEditor } from "../../../components/tiptap-templates/simple/simple-editor";
 
 const CreateOrEditPost = () => {
   return (
     <div>
-      <Tiptap />
+      <SimpleEditor />
     </div>
   );
 };

@@ -1,0 +1,5 @@
+export { SeparatorButton, SeparatorShortcutBadge } from "./separator-button"
+export type { SeparatorButtonProps } from "./separator-button"
+export { useSeparator, insertSeparator, canInsert } from "./use-separator"
+export type { UseSeparatorConfig } from "./use-separator"
+export { SEPARATOR_SHORTCUT_KEY } from "./use-separator"
