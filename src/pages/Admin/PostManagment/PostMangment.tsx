@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Pencil, Trash2, Eye, Heart, Calendar } from "lucide-react";
 import {
   Table,
@@ -21,6 +21,8 @@ import {
   DialogTrigger,
 } from "../../../components/ui/dialog";
 import { useNavigate } from "react-router-dom";
+import api from "../../../utils/Interceptor";
+import UserInfo from "../../../store";
 
 // Dummy Data
 const initialPosts = [
@@ -73,11 +75,28 @@ const initialPosts = [
 
 const PostMangment = () => {
   const [filter, setFilter] = useState<"all" | "publish" | "draft">("all");
-  const [posts, setPosts] = useState(initialPosts);
+  const [posts, setPosts] = useState([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [openPopup, setOpenPopup] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const navigate = useNavigate()
+  const {userInfo} = UserInfo()
+
+  const fetchAllPosts = async () => {
+    try {
+      const response = await api.get(`/get_all_by_id/${userInfo?.id}`)
+      if(response?.data?.success){
+        setPosts(response?.data)
+        console.log(response?.data)
+      }
+    } catch (error) {
+      console.error("errror : ", error)
+    }
+  }
+  
+  useEffect(() => {
+    fetchAllPosts()
+  }, [])
 
   // Derived state for filtering
   const filteredPosts = posts.filter((post) => {

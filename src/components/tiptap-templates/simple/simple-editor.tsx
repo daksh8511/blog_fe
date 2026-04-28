@@ -73,7 +73,10 @@ import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
 import "@/components/tiptap-templates/simple/simple-editor.scss";
 
 import content from "@/components/tiptap-templates/simple/data/content.json";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import api from "../../../utils/Interceptor";
+import UserInfo from "../../../store";
+import { toast } from "sonner";
 
 const MainToolbarContent = ({
   onHighlighterClick,
@@ -185,6 +188,8 @@ const MobileToolbarContent = ({
 
 export function SimpleEditor() {
   const { id } = useParams();
+  const { userInfo } = UserInfo();
+  const navigate = useNavigate()
   const isMobile = useIsBreakpoint();
   const { height } = useWindowSize();
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
@@ -243,11 +248,32 @@ export function SimpleEditor() {
     }
   }, [isMobile, mobileView]);
 
+  const handleCreateEditBlog = async () => {
+    const editorContent = editor?.getJSON();
+
+    if (id) {
+      console.log("Updating post with content:", editorContent);
+      // TODO: Send editorContent to your API to update the blog post
+      return;
+    }
+    const CreatePost = await api.post("/upload_blog", {
+      authorId: userInfo?.id,
+      content: editorContent,
+    });
+    if (CreatePost?.data?.success) {
+      toast.success("Blog create successfully");
+      navigate("/admin/posts");
+    }
+  };
+
   return (
     <div className="simple-editor-wrapper">
       <EditorContext.Provider value={{ editor }}>
         <div className="flex justify-end mb-4">
-          <Button className="!min-w-[150px] cursor-pointer mb-2 !bg-[#2b7fff] !text-white">
+          <Button
+            onClick={handleCreateEditBlog}
+            className="!min-w-[150px] cursor-pointer mb-2 !bg-[#2b7fff] !text-white"
+          >
             {id ? "Update Post" : "Create Post"}
           </Button>
         </div>
