@@ -214,7 +214,7 @@ const PostMangment = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredPosts.length === 0 ? (
+            {initialPosts.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={8}
@@ -224,7 +224,7 @@ const PostMangment = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredPosts.map((post) => (
+              initialPosts.map((post) => (
                 <TableRow
                   key={post.id}
                   data-state={selectedIds.has(post.id) ? "selected" : undefined}

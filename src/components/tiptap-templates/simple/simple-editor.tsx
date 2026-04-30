@@ -64,7 +64,7 @@ import { useWindowSize } from "@/hooks/use-window-size";
 import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
 
 // --- Components ---
-// import { ThemeToggle } from "@/components/tiptap-templates/simple/theme-toggle"
+import { ThemeToggle } from "@/components/tiptap-templates/simple/theme-toggle"
 
 // --- Lib ---
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
@@ -89,14 +89,12 @@ const MainToolbarContent = ({
 }) => {
   return (
     <>
-      <Spacer />
-
       <ToolbarGroup>
         <UndoRedoButton action="undo" />
         <UndoRedoButton action="redo" />
       </ToolbarGroup>
 
-      <ToolbarSeparator />
+      <ToolbarSeparator className='mx-1' />
 
       <ToolbarGroup>
         <HeadingDropdownMenu modal={false} levels={[1, 2, 3, 4]} />
@@ -108,7 +106,7 @@ const MainToolbarContent = ({
         <CodeBlockButton />
       </ToolbarGroup>
 
-      <ToolbarSeparator />
+      <ToolbarSeparator className='mx-1' />
 
       <ToolbarGroup>
         <MarkButton type="bold" />
@@ -116,6 +114,7 @@ const MainToolbarContent = ({
         <MarkButton type="strike" />
         <MarkButton type="code" />
         <MarkButton type="underline" />
+        <SeparatorButton />
         {!isMobile ? (
           <ColorHighlightPopover />
         ) : (
@@ -124,14 +123,14 @@ const MainToolbarContent = ({
         {!isMobile ? <LinkPopover /> : <LinkButton onClick={onLinkClick} />}
       </ToolbarGroup>
 
-      <ToolbarSeparator />
+     <ToolbarSeparator className='mx-1' />
 
       <ToolbarGroup>
         <MarkButton type="superscript" />
         <MarkButton type="subscript" />
       </ToolbarGroup>
 
-      <ToolbarSeparator />
+     <ToolbarSeparator className='mx-1' />
 
       <ToolbarGroup>
         <TextAlignButton align="left" />
@@ -140,19 +139,16 @@ const MainToolbarContent = ({
         <TextAlignButton align="justify" />
       </ToolbarGroup>
 
-      <ToolbarSeparator />
+     <ToolbarSeparator className='mx-1' />
 
       <ToolbarGroup>
-        <ImageUploadButton text="Add" /> <SeparatorButton />{" "}
+        <ImageUploadButton text="Add" />
+         <ToolbarGroup>
+        <ThemeToggle />
+      </ToolbarGroup>
       </ToolbarGroup>
 
       <Spacer />
-
-      {isMobile && <ToolbarSeparator />}
-
-      {/* <ToolbarGroup>
-        <ThemeToggle />
-      </ToolbarGroup> */}
     </>
   );
 };
@@ -189,7 +185,7 @@ const MobileToolbarContent = ({
 export function SimpleEditor() {
   const { id } = useParams();
   const { userInfo } = UserInfo();
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const isMobile = useIsBreakpoint();
   const { height } = useWindowSize();
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
@@ -267,46 +263,55 @@ export function SimpleEditor() {
   };
 
   return (
-    <div className="simple-editor-wrapper">
-      <EditorContext.Provider value={{ editor }}>
-        <div className="flex justify-end mb-4">
-          <Button
-            onClick={handleCreateEditBlog}
-            className="!min-w-[150px] cursor-pointer mb-2 !bg-[#2b7fff] !text-white"
-          >
-            {id ? "Update Post" : "Create Post"}
-          </Button>
-        </div>
-        <Toolbar
-          ref={toolbarRef}
-          style={{
-            ...(isMobile
-              ? {
-                  bottom: `calc(100% - ${height - rect.y}px)`,
-                }
-              : {}),
-          }}
+   <div className="simple-editor-wrapper">
+  <EditorContext.Provider value={{ editor }}>
+    {/* Sticky container */}
+    <div className="sticky top-0 z-50 bg-white">
+      {/* Button */}
+      <div className="flex justify-end p-2">
+        <Button
+          onClick={handleCreateEditBlog}
+          className="!min-w-[150px] cursor-pointer !bg-[#2b7fff] !text-white"
         >
-          {mobileView === "main" ? (
-            <MainToolbarContent
-              onHighlighterClick={() => setMobileView("highlighter")}
-              onLinkClick={() => setMobileView("link")}
-              isMobile={isMobile}
-            />
-          ) : (
-            <MobileToolbarContent
-              type={mobileView === "highlighter" ? "highlighter" : "link"}
-              onBack={() => setMobileView("main")}
-            />
-          )}
-        </Toolbar>
+          {id ? "Update Post" : "Create Post"}
+        </Button>
+      </div>
 
-        <EditorContent
-          editor={editor}
-          role="presentation"
-          className="simple-editor-content"
-        />
-      </EditorContext.Provider>
+      {/* Toolbar */}
+      <Toolbar
+        ref={toolbarRef}
+        style={{
+          ...(isMobile
+            ? {
+                bottom: `calc(100% - ${height - rect.y}px)`,
+              }
+            : {}),
+        }}
+      >
+        {mobileView === "main" ? (
+          <MainToolbarContent
+            onHighlighterClick={() => setMobileView("highlighter")}
+            onLinkClick={() => setMobileView("link")}
+            isMobile={isMobile}
+          />
+        ) : (
+          <MobileToolbarContent
+            type={mobileView === "highlighter" ? "highlighter" : "link"}
+            onBack={() => setMobileView("main")}
+          />
+        )}
+      </Toolbar>
+
     </div>
+
+    {/* Editor */}
+    <EditorContent
+      editor={editor}
+      role="presentation"
+      className="simple-editor-content"
+    />
+
+  </EditorContext.Provider>
+</div>
   );
 }

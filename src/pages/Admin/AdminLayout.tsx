@@ -1,4 +1,4 @@
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import {
   SidebarInset,
   SidebarProvider,
@@ -6,10 +6,18 @@ import {
 import AppSidebar from "../../components/ui/AppSidebar";
 
 const AdminLayout = () => {
+  const location = useLocation()
+  const hideSidebar =
+  location.pathname.includes('create') ||
+  location.pathname.includes('edit');
   return (
     <SidebarProvider>
       <div className="flex w-full">
-        <AppSidebar />
+        {
+          !hideSidebar && (
+            <AppSidebar />
+          )
+        }
 
         {/* Main Content */}
         <SidebarInset className="flex-1 z-0">
