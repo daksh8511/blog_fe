@@ -1,10 +1,7 @@
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import UserInfo from "../../store";
+import { Link, useLocation } from "react-router-dom";
 
 const AppSidebar = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const { logout } = UserInfo();
 
   const menu = [
     {
@@ -26,38 +23,26 @@ const AppSidebar = () => {
   ];
 
   return (
-    <div className="w-64 h-screen border-r p-4">
-      <h2 className="text-xl font-semibold mb-6">Admin Panel</h2>
 
-      <ul className="space-y-3">
-        {menu.map((item) => (
-          <li key={item.path}>
-            <Link
-              to={item.path}
-              className={`block px-3 py-2 rounded-md transition ${
-                item.match(location.pathname)
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-100"
-              }`}
-            >
-              {item.name}
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <Link
-        onClick={() => {
-          logout();
-          localStorage.removeItem("token");
-          localStorage.removeItem("auth-storage");
+      <div className="flex justify-end items-center">
+        <ul className="space-y-3 flex gap-3">
+          {menu.map((item) => (
+            <li key={item.path}>
+              <Link
+                to={item.path}
+                className={`block px-3 py-2 rounded-md transition ${
+                  item.match(location.pathname)
+                    ? "bg-[#574de5] text-white"
+                    : "hover:bg-gray-100"
+                }`}
+              >
+                {item.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
 
-          navigate("/");
-        }}
-        className={`block px-3 py-2 rounded-md transition hover:bg-gray-100 text-black `}
-      >
-        Logout
-      </Link>
-    </div>
   );
 };
 

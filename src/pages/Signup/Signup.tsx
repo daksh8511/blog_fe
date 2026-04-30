@@ -48,9 +48,9 @@ const Signup = () => {
         setInfo(response.data);
 
         toast.success("User created successfully");
-        navigate("/");
+        navigate("/signin");
       } else {
-        toast.error(response?.data?.msg);
+        toast.error("User already registered");
       }
     } catch (error) {
       toast.error("Server error. Try again");

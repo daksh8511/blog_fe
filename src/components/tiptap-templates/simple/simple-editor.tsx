@@ -64,7 +64,7 @@ import { useWindowSize } from "@/hooks/use-window-size";
 import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
 
 // --- Components ---
-import { ThemeToggle } from "@/components/tiptap-templates/simple/theme-toggle"
+import { ThemeToggle } from "@/components/tiptap-templates/simple/theme-toggle";
 
 // --- Lib ---
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
@@ -77,6 +77,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../utils/Interceptor";
 import UserInfo from "../../../store";
 import { toast } from "sonner";
+import { Input } from "../../ui/input";
+import Texts from "../../../alltexts/Texts";
 
 const MainToolbarContent = ({
   onHighlighterClick,
@@ -94,7 +96,7 @@ const MainToolbarContent = ({
         <UndoRedoButton action="redo" />
       </ToolbarGroup>
 
-      <ToolbarSeparator className='mx-1' />
+      <ToolbarSeparator className="mx-1" />
 
       <ToolbarGroup>
         <HeadingDropdownMenu modal={false} levels={[1, 2, 3, 4]} />
@@ -106,7 +108,7 @@ const MainToolbarContent = ({
         <CodeBlockButton />
       </ToolbarGroup>
 
-      <ToolbarSeparator className='mx-1' />
+      <ToolbarSeparator className="mx-1" />
 
       <ToolbarGroup>
         <MarkButton type="bold" />
@@ -123,14 +125,14 @@ const MainToolbarContent = ({
         {!isMobile ? <LinkPopover /> : <LinkButton onClick={onLinkClick} />}
       </ToolbarGroup>
 
-     <ToolbarSeparator className='mx-1' />
+      <ToolbarSeparator className="mx-1" />
 
       <ToolbarGroup>
         <MarkButton type="superscript" />
         <MarkButton type="subscript" />
       </ToolbarGroup>
 
-     <ToolbarSeparator className='mx-1' />
+      <ToolbarSeparator className="mx-1" />
 
       <ToolbarGroup>
         <TextAlignButton align="left" />
@@ -139,13 +141,13 @@ const MainToolbarContent = ({
         <TextAlignButton align="justify" />
       </ToolbarGroup>
 
-     <ToolbarSeparator className='mx-1' />
+      <ToolbarSeparator className="mx-1" />
 
       <ToolbarGroup>
         <ImageUploadButton text="Add" />
-         <ToolbarGroup>
-        <ThemeToggle />
-      </ToolbarGroup>
+        <ToolbarGroup>
+          <ThemeToggle />
+        </ToolbarGroup>
       </ToolbarGroup>
 
       <Spacer />
@@ -192,7 +194,6 @@ export function SimpleEditor() {
     "main",
   );
   const toolbarRef = useRef<HTMLDivElement>(null);
-
   const editor = useEditor({
     immediatelyRender: false,
     editorProps: {
@@ -257,61 +258,66 @@ export function SimpleEditor() {
       content: editorContent,
     });
     if (CreatePost?.data?.success) {
-      toast.success("Blog create successfully");
+      toast.success(Texts.createEditPost.BlogSuccessToast);
       navigate("/admin/posts");
     }
   };
 
   return (
-   <div className="simple-editor-wrapper">
-  <EditorContext.Provider value={{ editor }}>
-    {/* Sticky container */}
-    <div className="sticky top-0 z-50 bg-white">
-      {/* Button */}
-      <div className="flex justify-end p-2">
-        <Button
-          onClick={handleCreateEditBlog}
-          className="!min-w-[150px] cursor-pointer !bg-[#2b7fff] !text-white"
-        >
-          {id ? "Update Post" : "Create Post"}
-        </Button>
-      </div>
+    <div className="simple-editor-wrapper">
+      <EditorContext.Provider value={{ editor }}>
+        <div className="sticky top-0 z-50 bg-white dark:bg-black">
+          <div className="flex justify-end p-2">
+             <Button
+              onClick={handleCreateEditBlog}
+              className="!min-w-[150px] cursor-pointer !bg-[#2b7fff] !text-white mr-3"
+            >
+              {Texts.createEditPost.saveAsDraft}
+            </Button>
+            <Button
+              onClick={handleCreateEditBlog}
+              className="!min-w-[150px] cursor-pointer !bg-[#2b7fff] !text-white"
+            >
+              {id ? Texts.createEditPost.updatePost : Texts.createEditPost.createPost}
+            </Button>
+          </div>
 
-      {/* Toolbar */}
-      <Toolbar
-        ref={toolbarRef}
-        style={{
-          ...(isMobile
-            ? {
-                bottom: `calc(100% - ${height - rect.y}px)`,
-              }
-            : {}),
-        }}
-      >
-        {mobileView === "main" ? (
-          <MainToolbarContent
-            onHighlighterClick={() => setMobileView("highlighter")}
-            onLinkClick={() => setMobileView("link")}
-            isMobile={isMobile}
-          />
-        ) : (
-          <MobileToolbarContent
-            type={mobileView === "highlighter" ? "highlighter" : "link"}
-            onBack={() => setMobileView("main")}
-          />
-        )}
-      </Toolbar>
-
+          {/* Toolbar */}
+          <Toolbar
+            ref={toolbarRef}
+            style={{
+              ...(isMobile
+                ? {
+                    bottom: `calc(100% - ${height - rect.y}px)`,
+                  }
+                : {}),
+            }}
+          >
+            {mobileView === "main" ? (
+              <MainToolbarContent
+                onHighlighterClick={() => setMobileView("highlighter")}
+                onLinkClick={() => setMobileView("link")}
+                isMobile={isMobile}
+              />
+            ) : (
+              <MobileToolbarContent
+                type={mobileView === "highlighter" ? "highlighter" : "link"}
+                onBack={() => setMobileView("main")}
+              />
+            )}
+          </Toolbar>
+        </div>
+        <Input
+          placeholder={Texts.createEditPost.blogTitlePlaceholder}
+          className="mt-6 !text-2xl border-gray-100 placeholder:text-2xl border-t-0 border-x-0 rounded-none focus-visible:ring-0"
+        />
+        {/* Editor */}
+        <EditorContent
+          editor={editor}
+          role="presentation"
+          className="simple-editor-content"
+        />
+      </EditorContext.Provider>
     </div>
-
-    {/* Editor */}
-    <EditorContent
-      editor={editor}
-      role="presentation"
-      className="simple-editor-content"
-    />
-
-  </EditorContext.Provider>
-</div>
   );
 }

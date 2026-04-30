@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { ThumbsUp, StickyNote, MessageSquareText, BanknoteArrowUp, ChevronDown, User, Clock } from 'lucide-react';
+import { ThumbsUp, StickyNote, MessageSquareText, BanknoteArrowUp, ChevronDown, Clock } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../../components/ui/card';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import Texts from '../../../alltexts/Texts';
 
 const Dashboard = () => {
   const [timeframe, setTimeframe] = useState('7 day');
 
   const stats = [
     {
-      title: 'Total Posts',
+      title: Texts.platform_overview.total_posts,
       value: '1,284',
       description: '+12.5% from last month',
       icon: <StickyNote className="w-5 h-5 text-blue-600" />,
@@ -16,7 +17,7 @@ const Dashboard = () => {
       borderColor: 'border-blue-100',
     },
     {
-      title: 'Total Likes',
+      title:  Texts.platform_overview.total_likes,
       value: '42.5k',
       description: '+8.2% from last month',
       icon: <ThumbsUp className="w-5 h-5 text-rose-600" />,
@@ -24,7 +25,7 @@ const Dashboard = () => {
       borderColor: 'border-rose-100',
     },
     {
-      title: 'Total Comments',
+      title:  Texts.platform_overview.total_comments,
       value: '842',
       description: '+2.4% from last month',
       icon: <MessageSquareText className="w-5 h-5 text-amber-600" />,
@@ -32,7 +33,7 @@ const Dashboard = () => {
       borderColor: 'border-amber-100',
     },
     {
-      title: 'Monthly Growth',
+      title:  Texts.platform_overview.monthly_growth,
       value: '+18.2%',
       description: 'Active user retention',
       icon: <BanknoteArrowUp className="w-5 h-5 text-emerald-600" />,
@@ -78,9 +79,9 @@ const Dashboard = () => {
   return (
     <div className="p-6 space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col gap-1">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">Platform overview</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-foreground">{Texts.platform_overview.platform_overview}</h2>
         <p className="text-muted-foreground text-lg font-medium">
-          Real-time engagement and growth metrics for your blog.
+          {Texts.platform_overview.subtext}
         </p>
       </div>
 
@@ -120,8 +121,8 @@ const Dashboard = () => {
         <Card className="md:col-span-4 border shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-4">
             <div className="space-y-1">
-              <CardTitle className="text-xl">Engagement Analytics</CardTitle>
-              <CardDescription>Daily active interaction volume</CardDescription>
+              <CardTitle className="text-xl">{Texts?.platform_overview?.graph_title}</CardTitle>
+              <CardDescription>{Texts?.platform_overview?.graph_subtitle}</CardDescription>
             </div>
             <div className="relative inline-block text-left">
               <select 
@@ -163,9 +164,9 @@ const Dashboard = () => {
         <Card className="md:col-span-3 border shadow-sm flex flex-col h-full">
           <CardHeader className="pb-3">
             <CardTitle className="text-xl flex items-center gap-2">
-              Recent Activity
+              {Texts?.platform_overview?.recent_activity}
             </CardTitle>
-            <CardDescription>Latest interactions across your platform</CardDescription>
+            <CardDescription>{Texts?.platform_overview?.recent_activity_subtitle}m</CardDescription>
           </CardHeader>
           <CardContent className="flex-1 overflow-hidden p-0">
             <div className="h-[320px] overflow-y-auto px-6 pb-6 space-y-4 scrollbar-thin scrollbar-thumb-accent">
@@ -189,8 +190,8 @@ const Dashboard = () => {
                   </div>
                 </div>
               ))}
-              <button className="w-full py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest pt-2">
-                View All Activity
+              <button className="w-full py-2 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors capitalize tracking-widest pt-2">
+                {Texts?.platform_overview?.view_all_activity}
               </button>
             </div>
           </CardContent>

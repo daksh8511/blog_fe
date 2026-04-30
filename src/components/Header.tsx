@@ -4,12 +4,12 @@ import { Input } from "./ui/input";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import UserInfo from "../store";
-import { Bell } from 'lucide-react';
+import { Bell, LogOut } from 'lucide-react';
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
-  const { userInfo } = UserInfo();
+  const { userInfo, logout } = UserInfo();
   const location = useLocation();
 
   useEffect(() => {
@@ -40,7 +40,15 @@ const Header = () => {
 
         <div className="flex items-center gap-3">
           {location?.pathname?.startsWith("/admin") ? (
+            <div className="flex gap-6">
             <Bell />
+            <LogOut className="cursor-pointer" onClick={() => {
+              logout()
+              localStorage.removeItem('auth-storage')
+              localStorage.removeItem('token')
+              navigate("/");
+            }} />
+            </div>
           ) : (
             <>
               <Input placeholder="Search..." />

@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { Pencil, Trash2, Eye, Heart, Calendar } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  Eye,
+  Heart,
+  FileText,
+  CheckCircle2,
+  Clock,
+} from "lucide-react";
 import {
   Table,
   TableBody,
@@ -12,99 +20,81 @@ import { Checkbox } from "../../../components/ui/checkbox";
 import { Button } from "../../../components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "../../../components/ui/dialog";
 import { useNavigate } from "react-router-dom";
 import api from "../../../utils/Interceptor";
 import UserInfo from "../../../store";
-
-// Dummy Data
-const initialPosts = [
-  {
-    id: "1",
-    title: "Getting Started with React 19",
-    category: "Frontend",
-    status: "publish",
-    date: "2026-04-25",
-    views: 1250,
-    likes: 340,
-  },
-  {
-    id: "2",
-    title: "Why TailwindCSS v4 is a Game Changer",
-    category: "Styling",
-    status: "publish",
-    date: "2026-04-20",
-    views: 890,
-    likes: 215,
-  },
-  {
-    id: "3",
-    title: "Understanding TypeScript Generics",
-    category: "TypeScript",
-    status: "draft",
-    date: "2026-04-27",
-    views: 0,
-    likes: 0,
-  },
-  {
-    id: "4",
-    title: "10 Tips for Better UX Design",
-    category: "Design",
-    status: "publish",
-    date: "2026-04-15",
-    views: 2100,
-    likes: 580,
-  },
-  {
-    id: "5",
-    title: "Server Components Explained",
-    category: "Backend",
-    status: "draft",
-    date: "2026-04-26",
-    views: 0,
-    likes: 0,
-  },
-];
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../components/ui/select";
+import { Card, CardContent } from "../../../components/ui/card";
+import Texts from "../../../alltexts/Texts";
+import { toast } from "sonner";
 
 const PostMangment = () => {
-  const [filter, setFilter] = useState<"all" | "publish" | "draft">("all");
-  const [posts, setPosts] = useState([]);
+  const [filter, setFilter] = useState<string>("all");
+  const [posts, setPosts] = useState<any[]>([]);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [openPopup, setOpenPopup] = useState(false);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const navigate = useNavigate()
-  const {userInfo} = UserInfo()
+  const dropdownOptions = [
+    { label: Texts.content_managager.All_Status, value: "all" },
+    { label: Texts.content_managager.published, value: "publish" },
+    { label: Texts.content_managager.drafts, value: "draft" },
+  ];
+  const navigate = useNavigate();
+  const { userInfo } = UserInfo();
 
   const fetchAllPosts = async () => {
     try {
-      const response = await api.get(`/get_all_by_id/${userInfo?.id}`)
-      if(response?.data?.success){
-        setPosts(response?.data)
-        console.log(response?.data)
+      const response = await api.get(`/get_all_by_id/${userInfo?.id}`);
+      if (response?.data?.success) {
+        setPosts(response?.data?.data || []);
       }
     } catch (error) {
-      console.error("errror : ", error)
+      console.error("error:", error);
     }
-  }
-  
-  useEffect(() => {
-    fetchAllPosts()
-  }, [])
+  };
 
-  // Derived state for filtering
+  useEffect(() => {
+    fetchAllPosts();
+  }, []);
+
   const filteredPosts = posts.filter((post) => {
     if (filter === "all") return true;
     return post.status === filter;
   });
 
-  // Handlers
+  const stats = [
+    {
+      label: Texts.platform_overview?.total_posts,
+      value: posts.length,
+      icon: <FileText className="text-blue-500" />,
+      bg: "bg-blue-50",
+    },
+    {
+      label: Texts.content_managager.published,
+      value: posts.filter((p) => p.status === "publish").length,
+      icon: <CheckCircle2 className="text-emerald-500" />,
+      bg: "bg-emerald-50",
+    },
+    {
+      label: Texts.content_managager.drafts,
+      value: posts.filter((p) => p.status === "draft").length,
+      icon: <Clock className="text-amber-500" />,
+      bg: "bg-amber-50",
+    },
+  ];
+
   const toggleSelectAll = () => {
     if (selectedIds.size === filteredPosts.length && filteredPosts.length > 0) {
       setSelectedIds(new Set());
@@ -115,11 +105,7 @@ const PostMangment = () => {
 
   const toggleSelect = (id: string) => {
     const newSelected = new Set(selectedIds);
-    if (newSelected.has(id)) {
-      newSelected.delete(id);
-    } else {
-      newSelected.add(id);
-    }
+    newSelected.has(id) ? newSelected.delete(id) : newSelected.add(id);
     setSelectedIds(newSelected);
   };
 
@@ -128,170 +114,207 @@ const PostMangment = () => {
     setOpenPopup(true);
   };
 
-  const confirmDelete = () => {
-    if (!deleteId) return;
-
-    setPosts(posts.filter((p) => p.id !== deleteId));
-
-    const newSelected = new Set(selectedIds);
-    newSelected.delete(deleteId);
-    setSelectedIds(newSelected);
-
-    setDeleteId(null);
+  const confirmDelete = async () => {
+    try {
+      const response = await api.delete(`/delete_blog/${deleteId}`);
+      if (response?.data?.success) {
+        toast.success(
+          response?.data?.msg || Texts.content_managager.BlogDeleteSuccMsg,
+        );
+        fetchAllPosts()
+      }
+    } catch (error) {
+      console.error("blog delete errro : ", error);
+      toast.error("Something went wrong, blog are not delete");
+    }
     setOpenPopup(false);
   };
 
   return (
-    <div className="p-6 space-y-6 animate-in fade-in duration-500">
-      <div className="flex flex-col gap-1">
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">
-          Post Management
-        </h2>
-        <p className="text-muted-foreground font-medium">
-          Manage your blog posts, drafts, and categories.
+    <div className="p-6 space-y-8 max-w-7xl mx-auto animate-in fade-in duration-700">
+      {/* Header Section */}
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+          {Texts?.content_managager?.content_managager_title}
+        </h1>
+        <p className="text-gray-500 mt-1">
+          {Texts?.content_managager?.content_managager_subtitle}
         </p>
       </div>
 
-      {/* Filters & Actions */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center p-1 bg-muted/50 rounded-lg border">
-          <Button
-            variant={filter === "all" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setFilter("all")}
-            className="rounded-md"
+      {/* Stats Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {stats.map((stat, i) => (
+          <Card key={i} className="border-none shadow-sm bg-white">
+            <CardContent className="p-6 flex items-center gap-4">
+              <div className={`p-3 rounded-xl ${stat.bg}`}>{stat.icon}</div>
+              <div>
+                <p className="text-sm text-gray-500 font-medium">
+                  {stat.label}
+                </p>
+                <h3 className="text-2xl font-bold">{stat.value}</h3>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Table Actions Bar */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-xl border shadow-sm">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
+          <Select
+            onValueChange={(value) => setFilter(value)}
+            defaultValue="all"
           >
-            All Posts
-          </Button>
-          <Button
-            variant={filter === "publish" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setFilter("publish")}
-            className="rounded-md"
-          >
-            Published
-          </Button>
-          <Button
-            variant={filter === "draft" ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setFilter("draft")}
-            className="rounded-md"
-          >
-            Drafts
-          </Button>
+            <SelectTrigger className="w-[180px] bg-gray-50 border-none ring-0 focus:ring-0">
+              <SelectValue placeholder="Filter by status" />
+            </SelectTrigger>
+            <SelectContent>
+              {dropdownOptions?.map((dropdowns) => (
+                <SelectItem value={dropdowns?.value}>
+                  {dropdowns?.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {selectedIds.size > 0 && (
-          <Button variant="destructive" size="sm" className="gap-2">
-            <Trash2 className="w-4 h-4" />
-            Delete Selected ({selectedIds.size})
+          <Button
+            variant="destructive"
+            size="sm"
+            className="animate-in zoom-in duration-200"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            {Texts.content_managager.delete} ({selectedIds.size})
           </Button>
         )}
       </div>
 
-      {/* Table Container */}
-      <div className="rounded-xl border bg-card text-card-foreground shadow-sm overflow-hidden">
+      {/* Modern Table */}
+      <div className="bg-white border rounded-xl overflow-hidden shadow-sm">
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader className="bg-gray-50/50">
             <TableRow>
-              <TableHead className="w-[50px] text-center">
+              <TableHead className="w-12">
                 <Checkbox
                   checked={
                     filteredPosts.length > 0 &&
                     selectedIds.size === filteredPosts.length
                   }
                   onCheckedChange={toggleSelectAll}
-                  aria-label="Select all"
                 />
               </TableHead>
-              <TableHead>Post Name</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead className="text-right">Views</TableHead>
-              <TableHead className="text-right">Likes</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Post Title
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Category
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Status
+              </TableHead>
+              <TableHead className="font-semibold text-gray-700">
+                Created
+              </TableHead>
+              <TableHead className="text-center font-semibold text-gray-700">
+                Engagement
+              </TableHead>
+              <TableHead className="text-right font-semibold text-gray-700">
+                Actions
+              </TableHead>
             </TableRow>
           </TableHeader>
+
           <TableBody>
-            {initialPosts.length === 0 ? (
+            {filteredPosts.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
-                  className="h-32 text-center text-muted-foreground"
+                  colSpan={7}
+                  className="text-center py-20 text-gray-400"
                 >
-                  No posts found.
+                  <div className="flex flex-col items-center gap-2">
+                    <FileText size={40} className="opacity-20" />
+                    <p>{Texts.content_managager.NoPostFoundMsg}</p>
+                  </div>
                 </TableCell>
               </TableRow>
             ) : (
-              initialPosts.map((post) => (
+              filteredPosts.map((post) => (
                 <TableRow
                   key={post.id}
-                  data-state={selectedIds.has(post.id) ? "selected" : undefined}
-                  className="group"
+                  className="hover:bg-gray-50/50 transition-colors"
                 >
-                  <TableCell className="text-center">
+                  <TableCell>
                     <Checkbox
                       checked={selectedIds.has(post.id)}
                       onCheckedChange={() => toggleSelect(post.id)}
-                      aria-label={`Select ${post.title}`}
                     />
                   </TableCell>
-                  <TableCell className="font-medium text-foreground max-w-[250px] truncate">
-                    {post.title}
+
+                  <TableCell className="font-medium text-gray-900 max-w-[250px] truncate">
+                    {post.blog_title}
                   </TableCell>
+
                   <TableCell>
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary">
-                      {post.category}
+                    <span className="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-600">
+                      {post.blog_category}
                     </span>
                   </TableCell>
+
                   <TableCell>
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                         post.status === "publish"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-amber-50 text-amber-700 border-amber-200"
+                          ? "bg-emerald-100 text-emerald-700"
+                          : "bg-gray-100 text-gray-600"
                       }`}
                     >
-                      {post.status === "publish" ? "Published" : "Draft"}
+                      <span
+                        className={`w-1.5 h-1.5 rounded-full ${post.status === "publish" ? "bg-emerald-500" : "bg-gray-400"}`}
+                      />
+                      {post.status}
                     </span>
                   </TableCell>
+
+                  <TableCell className="text-gray-500 text-sm whitespace-nowrap">
+                    {new Date(post.create_at).toLocaleDateString()}
+                  </TableCell>
+
                   <TableCell>
-                    <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
-                      <Calendar className="w-3.5 h-3.5" />
-                      {post.date}
+                    <div className="flex items-center justify-center gap-4 text-gray-500">
+                      <div className="flex items-center gap-1">
+                        <Eye size={14} className="text-gray-400" />
+                        <span className="text-xs font-medium">
+                          {post.blog_views}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Heart size={14} className="text-gray-400" />
+                        <span className="text-xs font-medium">
+                          {post.likes}
+                        </span>
+                      </div>
                     </div>
                   </TableCell>
+
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1.5 text-muted-foreground text-sm font-medium">
-                      <Eye className="w-3.5 h-3.5" />
-                      {post.views.toLocaleString()}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1.5 text-muted-foreground text-sm font-medium">
-                      <Heart className="w-3.5 h-3.5" />
-                      {post.likes.toLocaleString()}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2 ">
+                    <div className="flex justify-end gap-1">
                       <Button
-                        variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-blue-600"
-                        onClick={() => navigate(`/admin/edit/${post.id}`)}
+                        variant="ghost"
+                        className="text-gray-400 hover:text-indigo-600"
+                        onClick={() => navigate(`/admin/edit/${post.blogid}`)}
                       >
-                        <Pencil className="h-4 w-4" />
-                        <span className="sr-only">Edit</span>
+                        <Pencil className="w-4 h-4" />
                       </Button>
                       <Button
-                        variant="ghost"
                         size="icon"
-                        className="h-8 w-8 text-muted-foreground hover:text-red-600"
-                        onClick={() => handleDelete(post.id)}
+                        variant="ghost"
+                        className="text-gray-400 hover:text-red-600"
+                        onClick={() => handleDelete(post.blogid)}
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </TableCell>
@@ -300,30 +323,29 @@ const PostMangment = () => {
             )}
           </TableBody>
         </Table>
-
-        {openPopup && (
-          <Dialog open={openPopup} onOpenChange={setOpenPopup}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Delete Post</DialogTitle>
-                <DialogDescription>
-                  Are you sure you want to delete this post? This action cannot
-                  be undone.
-                </DialogDescription>
-              </DialogHeader>
-
-              <DialogFooter>
-                <DialogClose asChild>
-                  <Button variant="outline">Cancel</Button>
-                </DialogClose>
-                <Button variant="destructive" onClick={confirmDelete}>
-                  Delete
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        )}
       </div>
+
+      {/* Delete Confirmation */}
+      <Dialog open={openPopup} onOpenChange={setOpenPopup}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              {Texts.content_managager.DeleteConfimTitle}
+            </DialogTitle>
+            <DialogDescription>
+              {Texts.content_managager.DeleteConfirmDesciption}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-4 gap-2">
+            <Button variant="outline" onClick={() => setOpenPopup(false)}>
+              {Texts.content_managager.Cancel}
+            </Button>
+            <Button variant="destructive" onClick={confirmDelete}>
+              {Texts.content_managager.DeletePost}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

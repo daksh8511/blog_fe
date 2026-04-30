@@ -1,7 +1,22 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-const UserInfo = create(
+export interface User {
+  create_at: string;
+  email: string;
+  id: number;
+  name: string;
+  password: string;
+}
+
+interface AuthStore {
+  userInfo: User | null;
+  token: string | null;
+  setInfo: (value: { User: User; token: string }) => void;
+  logout: () => void;
+}
+
+const UserInfo =  create<AuthStore>()(
   persist(
     (set) => ({
       userInfo: null,
@@ -25,5 +40,6 @@ const UserInfo = create(
     }
   )
 );
+
 
 export default UserInfo;
