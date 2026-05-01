@@ -5,6 +5,7 @@ import UserInfo from "../store";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Avatar, AvatarImage } from "./ui/avatar";
+import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover"; // Import Popover
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -25,8 +26,16 @@ const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const { userInfo, logout } = UserInfo();
+
+  // Mock Notifications
+  const notifications = [
+    { id: 1, text: "Someone liked your story", time: "2m ago" },
+    { id: 2, text: "New follower: Alex Doe", time: "1h ago" },
+    { id: 3, text: "System update completed", time: "5h ago" },
+  ];
+
   const menus = [
-    { label: "Profile", url: "/profile", icon: User },
+    { label: "Profile", url: "/4", icon: User },
     { label: "Stories", url: "/admin/stories", icon: FileText },
     { label: "Stats", url: "/admin/stats", icon: BarChart },
   ];
@@ -54,14 +63,48 @@ const Header = () => {
 
           {userInfo ? (
             <>
-              <Bell className="cursor-pointer mx-2" />
+              {/* NOTIFICATION POPOVER */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <div className="relative cursor-pointer p-2 hover:bg-accent rounded-full transition-colors">
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute top-1.5 right-1.5 flex h-2 w-2 rounded-full bg-red-500" />
+                  </div>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-80 p-0 rounded-xl overflow-hidden">
+                  <div className="flex items-center justify-between border-b px-4 py-3 bg-muted/30">
+                    <h4 className="text-sm font-semibold">Notifications</h4>
+                    <Button variant="ghost" size="sm" className="h-auto p-1 text-xs text-muted-foreground">
+                      Mark all as read
+                    </Button>
+                  </div>
+                  <div className="max-h-[300px] overflow-y-auto">
+                    {notifications.length > 0 ? (
+                      notifications.map((n) => (
+                        <div key={n.id} className="flex flex-col gap-1 border-b p-4 hover:bg-accent/50 cursor-pointer transition-colors last:border-0">
+                          <p className="text-sm">{n.text}</p>
+                          <span className="text-[10px] text-muted-foreground uppercase font-medium">{n.time}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="p-8 text-center text-sm text-muted-foreground">
+                        No new notifications
+                      </div>
+                    )}
+                  </div>
+                  <div className="border-t p-2 text-center">
+                    <Button variant="ghost" className="w-full text-xs h-8">View All</Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Avatar className="cursor-pointer">
                     <AvatarImage src="https://github.com/shadcn.png" />
                   </Avatar>
                 </DropdownMenuTrigger>
-
+                {/* ... rest of your DropdownMenuContent */}
                 <DropdownMenuContent align="end" className="w-48 rounded-xl">
                   {menus.map((item) => (
                     <DropdownMenuItem
@@ -73,7 +116,6 @@ const Header = () => {
                     </DropdownMenuItem>
                   ))}
 
-                  {/* SETTINGS POPUP LOGIC */}
                   <Dialog>
                     <DialogTrigger asChild>
                       <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
@@ -85,12 +127,8 @@ const Header = () => {
                       <DialogHeader>
                         <DialogTitle>{Texts.common.AccountSettings}</DialogTitle>
                       </DialogHeader>
-                      <div className="py-4">
-                        <p className="text-sm text-muted-foreground">
-                          Manage your profile preferences and account security
-                          here.
-                        </p>
-                        {/* Add your settings form components here */}
+                      <div className="py-4 text-sm text-muted-foreground">
+                        Manage your preferences here.
                       </div>
                     </DialogContent>
                   </Dialog>

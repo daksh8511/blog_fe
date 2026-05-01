@@ -7,6 +7,8 @@ export interface User {
   id: number;
   name: string;
   password: string;
+  followers : number;
+  about_us : string
 }
 
 interface AuthStore {

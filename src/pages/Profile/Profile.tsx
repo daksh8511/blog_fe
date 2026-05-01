@@ -1,12 +1,30 @@
-import { useState } from 'react'
-import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar"
-import { Button } from "../../components/ui/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs"
+import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "../../components/ui/avatar";
+import { Button } from "../../components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../../components/ui/tabs";
+import { useParams } from "react-router-dom";
+import UserInfo from "../../store";
+import EditProfile from "../../components/EditProfile";
 
 const Profile = () => {
-  const [isFollowing, setIsFollowing] = useState(false)
+  const params = useParams();
+  const { userInfo } = UserInfo();
+  
+  const isSelfProfile = userInfo?.id === Number(params?.id);
+  const [isFollowing, setIsFollowing] = useState(false);
+  
+  // Form State
+  const [formData, setFormData] = useState({
+    name: userInfo?.name || "",
+    email: userInfo?.email || "",
+    about_us: userInfo?.about_us || ""
+  });
 
-  // Mock data for the blogs
+  const handleSave = () => {
+    // Logic to save data to your store or API
+    console.log("Saving data:", formData);
+    // setOpen(false); 
+  };
   const blogs = [
     { id: 1, title: "Building Scalable Apps with Next.js 14", date: "2 days ago", views: "1.2K views" },
     { id: 2, title: "Why I switched to Tailwind CSS", date: "1 week ago", views: "850 views" },
@@ -15,8 +33,6 @@ const Profile = () => {
 
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-8">
-      
-      {/* TOP SECTION: YouTube Style Header */}
       <header className="flex flex-col md:flex-row items-center md:items-start gap-6">
         <Avatar className="h-32 w-32 md:h-40 md:w-40">
           <AvatarImage src="https://github.com/shadcn.png" />
@@ -24,27 +40,30 @@ const Profile = () => {
         </Avatar>
 
         <div className="flex-1 text-center md:text-left">
-          <h1 className="text-3xl font-bold">shadcn/ui Master</h1>
+          <h1 className="text-3xl font-bold">{isSelfProfile ? userInfo?.name : "Unknown"}</h1>
           <div className="flex flex-wrap justify-center md:justify-start gap-2 text-sm text-muted-foreground mt-1">
-            <span className="font-medium text-foreground">@shadcn_dev</span>
+            <span className="font-medium text-foreground">@{isSelfProfile ? userInfo?.name : "Unknown"}</span>
             <span>•</span>
-            <span>125K followers</span>
+            <span>{userInfo?.followers} followers</span>
             <span>•</span>
             <span>48 blogs</span>
           </div>
           <p className="mt-3 text-muted-foreground max-w-xl line-clamp-2">
-            Professional UI designer and frontend developer. I write about React, 
-            design systems, and the future of web development.
+            {isSelfProfile ? userInfo?.about_us : "Professional UI designer and frontend developer."}
           </p>
           
           <div className="mt-4 flex justify-center md:justify-start gap-3">
-            <Button 
-              variant={isFollowing ? "secondary" : "default"} 
-              className="rounded-full px-8"
-              onClick={() => setIsFollowing(!isFollowing)}
-            >
-              {isFollowing ? "Following" : "Follow"}
-            </Button>
+            {isSelfProfile ? (
+            <EditProfile formData={formData} setFormData={setFormData} handleSave={handleSave} />
+            ) : (
+              <Button 
+                variant={isFollowing ? "secondary" : "default"} 
+                className="rounded-full px-8"
+                onClick={() => setIsFollowing(!isFollowing)}
+              >
+                {isFollowing ? "Following" : "Follow"}
+              </Button>
+            )}
             <Button variant="outline" className="rounded-full">Share</Button>
           </div>
         </div>
