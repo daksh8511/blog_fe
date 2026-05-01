@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "../components/ui/dialog";
+import Texts from "../alltexts/Texts";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
@@ -45,7 +46,7 @@ const Header = () => {
     >
       <div className="mx-auto flex h-full items-center justify-between px-4">
         <div>
-          <h2 className="font-bold">Lumina</h2>
+          <h2 className="font-bold">{Texts.common.Lumina}</h2>
         </div>
 
         <div className="flex items-center gap-3">
@@ -77,12 +78,12 @@ const Header = () => {
                     <DialogTrigger asChild>
                       <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                         <Settings className="mr-2 h-4 w-4" />
-                        Settings
+                        {Texts.common.Settings}
                       </DropdownMenuItem>
                     </DialogTrigger>
                     <DialogContent>
                       <DialogHeader>
-                        <DialogTitle>Account Settings</DialogTitle>
+                        <DialogTitle>{Texts.common.AccountSettings}</DialogTitle>
                       </DialogHeader>
                       <div className="py-4">
                         <p className="text-sm text-muted-foreground">
@@ -104,7 +105,7 @@ const Header = () => {
                       navigate("/");
                     }}
                   >
-                    Logout
+                    {Texts.common.Logout}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -115,7 +116,7 @@ const Header = () => {
               className="hidden rounded-full sm:inline-flex"
               variant="outline"
             >
-              Sign In
+              {Texts.common.Signin}
             </Button>
           )}
         </div>

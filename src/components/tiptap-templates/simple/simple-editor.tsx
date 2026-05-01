@@ -356,7 +356,7 @@ export function SimpleEditor() {
           value={storyTitle}
           placeholder="Story title..."
           onChange={(e) => setStoryTitle(e.target.value)}
-          className={`mt-6 !text-2xl border-gray-100 placeholder:text-2xl border-t-0 border-x-0 rounded-none focus-visible:ring-0 ${
+          className={`mt-6 !py-7 !text-2xl border-gray-100 placeholder:text-2xl border-t-0 border-x-0 rounded-none focus-visible:ring-0 ${
             titleError ? "border-red-500" : ""
           }`}
         />

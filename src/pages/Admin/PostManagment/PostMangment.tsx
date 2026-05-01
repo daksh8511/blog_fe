@@ -180,8 +180,8 @@ const PostMangment = () => {
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
-              {dropdownOptions?.map((dropdowns) => (
-                <SelectItem value={dropdowns?.value}>
+              {dropdownOptions?.map((dropdowns, i) => (
+                <SelectItem key={i} value={dropdowns?.value}>
                   {dropdowns?.label}
                 </SelectItem>
               ))}
