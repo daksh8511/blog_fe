@@ -19,26 +19,37 @@ export const router = createBrowserRouter([
     element: <App />,
     children: [
       {
-        path: "/",
         index: true,
         element: <Home />,
       },
       {
-        path: "/signin",
-        element: <Signin />,
+        path: "signin",
+        element: (
+          <ProtectedRoute type="auth">
+            <Signin />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "/signup",
-        element: <Signup />,
+        path: "signup",
+        element: (
+          <ProtectedRoute type="auth">
+            <Signup />
+          </ProtectedRoute>
+        ),
       },
       {
-        path: "/forgotpassword",
-        element: <ForgotPassowrd />,
+        path: "forgotpassword",
+        element: (
+          <ProtectedRoute type="auth">
+            <ForgotPassowrd />
+          </ProtectedRoute>
+        ),
       },
       {
         path: "blog/:id",
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute type="private">
             <Blog />
           </ProtectedRoute>
         ),
@@ -46,37 +57,22 @@ export const router = createBrowserRouter([
       {
         path: "admin",
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute type="private">
             <AdminLayout />
           </ProtectedRoute>
         ),
         children: [
-          {
-            path: "stats",
-            element: <Dashboard />,
-          },
-          {
-            path: "stories",
-            element: <PostManagment />,
-          },
-            {
-            path: "settings",
-            element: <Settings />,
-          },
-          {
-            path: "create",
-            element: <CreateOrEditPost />,
-          },
-          {
-            path: "edit/:id",
-            element: <CreateOrEditPost />,
-          },
+          { path: "stats", element: <Dashboard /> },
+          { path: "stories", element: <PostManagment /> },
+          { path: "settings", element: <Settings /> },
+          { path: "create", element: <CreateOrEditPost /> },
+          { path: "edit/:id", element: <CreateOrEditPost /> },
         ],
       },
       {
         path: "profile",
         element: (
-          <ProtectedRoute>
+          <ProtectedRoute type="private">
             <Profile />
           </ProtectedRoute>
         ),
