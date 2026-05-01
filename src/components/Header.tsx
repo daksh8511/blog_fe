@@ -1,16 +1,28 @@
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import UserInfo from "../store";
-import { Bell, LogOut } from 'lucide-react';
+import { Bell, User, FileText, Settings, BarChart } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+} from "../components/ui/dropdown-menu";
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const navigate = useNavigate();
   const { userInfo, logout } = UserInfo();
-  const location = useLocation();
+  const menus = [
+    { label: "Profile", url: "/profile", icon: User },
+    { label: "Stories", url: "/admin/stories", icon: FileText },
+    { label: "Stats", url: "/admin/stats", icon: BarChart },
+    { label: "Settings", url: "/admin/settings", icon: Settings },
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -39,26 +51,57 @@ const Header = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          {location?.pathname?.startsWith("/admin") ? (
-            <div className="flex gap-6">
-            <Bell />
-            <LogOut className="cursor-pointer" onClick={() => {
-              logout()
-              localStorage.removeItem('auth-storage')
-              localStorage.removeItem('token')
-              navigate("/");
-            }} />
-            </div>
-          ) : (
-            <>
-              <Input placeholder="Search..." />
+          <>
+            <div className="flex items-center gap-3">
+              <Input placeholder="Search..." className="w-48 md:w-64" />
+
               {userInfo ? (
-                <Avatar onClick={() => navigate(`/admin/dashboard`)}>
-                  <AvatarImage
-                    src="https://github.com/shadcn.png"
-                    alt="@shadcn"
-                  />
-                </Avatar>
+                <>
+                  <Bell className="cursor-pointer mx-2" />
+
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Avatar className="cursor-pointer">
+                        <AvatarImage
+                          src="https://github.com/shadcn.png"
+                          alt="profile"
+                        />
+                      </Avatar>
+                    </DropdownMenuTrigger>
+
+                    <DropdownMenuContent
+                      align="end"
+                      className="w-48 rounded-xl"
+                    >
+                      {menus.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <DropdownMenuItem
+                            key={item.label}
+                            onClick={() => navigate(item.url)}
+                          >
+                            <Icon className="mr-2 h-4 w-4" />
+                            {item.label}
+                          </DropdownMenuItem>
+                        );
+                      })}
+
+                      <DropdownMenuSeparator />
+
+                      <DropdownMenuItem
+                        className="text-red-500"
+                        onClick={() => {
+                          logout();
+                          localStorage.removeItem("auth-storage");
+                          localStorage.removeItem("token");
+                          navigate("/");
+                        }}
+                      >
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
               ) : (
                 <Button
                   onClick={() => navigate("/signin")}
@@ -68,8 +111,8 @@ const Header = () => {
                   Sign In
                 </Button>
               )}
-            </>
-          )}
+            </div>
+          </>
         </div>
       </div>
     </nav>

@@ -10,6 +10,8 @@ import AdminLayout from "./pages/Admin/AdminLayout.tsx";
 import Dashboard from "./pages/Admin/Dashboard/Dashboard.tsx";
 import PostManagment from "./pages/Admin/PostManagment/PostMangment.tsx";
 import CreateOrEditPost from "./pages/Admin/CreateOrEditPost/CreateOrEditPost.tsx";
+import Profile from "./pages/Profile/Profile.tsx";
+import Settings from "./pages/Admin/Settings/Settings.tsx";
 
 export const router = createBrowserRouter([
   {
@@ -50,12 +52,16 @@ export const router = createBrowserRouter([
         ),
         children: [
           {
-            path: "dashboard",
+            path: "stats",
             element: <Dashboard />,
           },
           {
-            path: "posts",
+            path: "stories",
             element: <PostManagment />,
+          },
+            {
+            path: "settings",
+            element: <Settings />,
           },
           {
             path: "create",
@@ -66,6 +72,14 @@ export const router = createBrowserRouter([
             element: <CreateOrEditPost />,
           },
         ],
+      },
+      {
+        path: "profile",
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
       },
     ],
   },

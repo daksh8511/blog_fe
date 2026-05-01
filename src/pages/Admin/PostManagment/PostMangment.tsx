@@ -121,7 +121,7 @@ const PostMangment = () => {
         toast.success(
           response?.data?.msg || Texts.content_managager.BlogDeleteSuccMsg,
         );
-        fetchAllPosts()
+        fetchAllPosts();
       }
     } catch (error) {
       console.error("blog delete errro : ", error);
@@ -133,13 +133,23 @@ const PostMangment = () => {
   return (
     <div className="p-6 space-y-8 max-w-7xl mx-auto animate-in fade-in duration-700">
       {/* Header Section */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-          {Texts?.content_managager?.content_managager_title}
-        </h1>
-        <p className="text-gray-500 mt-1">
-          {Texts?.content_managager?.content_managager_subtitle}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            {Texts?.content_managager?.content_managager_title}
+          </h1>
+          <p className="text-gray-500 mt-1">
+            {Texts?.content_managager?.content_managager_subtitle}
+          </p>
+        </div>
+
+        <Button
+          onClick={() => navigate("/admin/create")} // Adjust this path to your create route
+          className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm w-full sm:w-auto"
+        >
+          <Pencil className="w-4 h-4 mr-2" />
+          {Texts.createEditPost.createPost || "Create Story"}
+        </Button>
       </div>
 
       {/* Stats Overview */}
