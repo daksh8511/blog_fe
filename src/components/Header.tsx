@@ -18,7 +18,7 @@ const Header = () => {
   const navigate = useNavigate();
   const { userInfo, logout } = UserInfo();
   const menus = [
-    { label: "Profile", url: "/profile", icon: User },
+    { label: "Profile", url: "/13yh12ui3-123123n12k", icon: User },
     { label: "Stories", url: "/admin/stories", icon: FileText },
     { label: "Stats", url: "/admin/stats", icon: BarChart },
     { label: "Settings", url: "/admin/settings", icon: Settings },

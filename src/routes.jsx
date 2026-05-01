@@ -70,7 +70,7 @@ export const router = createBrowserRouter([
         ],
       },
       {
-        path: "profile",
+        path: ":id",
         element: (
           <ProtectedRoute type="private">
             <Profile />

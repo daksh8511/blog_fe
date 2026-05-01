@@ -34,8 +34,8 @@ const Texts = {
   },
   createEditPost : {
     saveAsDraft : "Save as draft",
-    createPost : "Create post",
-    updatePost : "Update post",
+    createPost : "Create story",
+    updatePost : "Update story",
     blogTitlePlaceholder : "Write your title here...",
     BlogSuccessToast : 'Blog create successfully'
   }
