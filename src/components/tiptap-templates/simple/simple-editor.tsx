@@ -13,17 +13,17 @@ import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
 
 // --- UI Primitives ---
-import { Button } from "@/components/tiptap-ui-primitive/button";
-import { Spacer } from "@/components/tiptap-ui-primitive/spacer";
+import { Button } from "../../tiptap-ui-primitive/button";
+import { Spacer } from "../../tiptap-ui-primitive/spacer";
 import {
   Toolbar,
   ToolbarGroup,
   ToolbarSeparator,
-} from "@/components/tiptap-ui-primitive/toolbar";
+} from "../../tiptap-ui-primitive/toolbar";
 
 // --- Tiptap Node ---
-import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node/image-upload-node-extension";
-import { HorizontalRule } from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension";
+import { ImageUploadNode } from "../../tiptap-node/image-upload-node/image-upload-node-extension";
+import { HorizontalRule } from "../../tiptap-node/horizontal-rule-node/horizontal-rule-node-extension";
 import "@/components/tiptap-node/blockquote-node/blockquote-node.scss";
 import "@/components/tiptap-node/code-block-node/code-block-node.scss";
 import "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node.scss";
@@ -33,46 +33,46 @@ import "@/components/tiptap-node/heading-node/heading-node.scss";
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
 
 // --- Tiptap UI ---
-import { HeadingDropdownMenu } from "@/components/tiptap-ui/heading-dropdown-menu";
-import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button";
-import { ListDropdownMenu } from "@/components/tiptap-ui/list-dropdown-menu";
-import { BlockquoteButton } from "@/components/tiptap-ui/blockquote-button";
-import { CodeBlockButton } from "@/components/tiptap-ui/code-block-button";
-import { SeparatorButton } from "@/components/tiptap-ui/separator-button";
+import { HeadingDropdownMenu } from "../../tiptap-ui/heading-dropdown-menu";
+import { ImageUploadButton } from "../../tiptap-ui/image-upload-button";
+import { ListDropdownMenu } from "../../tiptap-ui/list-dropdown-menu";
+import { BlockquoteButton } from "../../tiptap-ui/blockquote-button";
+import { CodeBlockButton } from "../../tiptap-ui/code-block-button";
+import { SeparatorButton } from "../../tiptap-ui/separator-button";
 import {
   ColorHighlightPopover,
   ColorHighlightPopoverContent,
   ColorHighlightPopoverButton,
-} from "@/components/tiptap-ui/color-highlight-popover";
+} from "../../tiptap-ui/color-highlight-popover";
 import {
   LinkPopover,
   LinkContent,
   LinkButton,
-} from "@/components/tiptap-ui/link-popover";
-import { MarkButton } from "@/components/tiptap-ui/mark-button";
-import { TextAlignButton } from "@/components/tiptap-ui/text-align-button";
-import { UndoRedoButton } from "@/components/tiptap-ui/undo-redo-button";
+} from "../../tiptap-ui/link-popover";
+import { MarkButton } from "../../tiptap-ui/mark-button";
+import { TextAlignButton } from "../../tiptap-ui/text-align-button";
+import { UndoRedoButton } from "../../tiptap-ui/undo-redo-button";
 
 // --- Icons ---
-import { ArrowLeftIcon } from "@/components/tiptap-icons/arrow-left-icon";
-import { HighlighterIcon } from "@/components/tiptap-icons/highlighter-icon";
-import { LinkIcon } from "@/components/tiptap-icons/link-icon";
+import { ArrowLeftIcon } from "../../tiptap-icons/arrow-left-icon";
+import { HighlighterIcon } from "../../tiptap-icons/highlighter-icon";
+import { LinkIcon } from "../../tiptap-icons/link-icon";
 
 // --- Hooks ---
-import { useIsBreakpoint } from "@/hooks/use-is-breakpoint";
-import { useWindowSize } from "@/hooks/use-window-size";
-import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
+import { useIsBreakpoint } from "../../../hooks/use-is-breakpoint";
+import { useWindowSize } from "../../../hooks/use-window-size";
+import { useCursorVisibility } from "../../../hooks/use-cursor-visibility";
 
 // --- Components ---
-import { ThemeToggle } from "@/components/tiptap-templates/simple/theme-toggle";
+import { ThemeToggle } from "../../tiptap-templates/simple/theme-toggle";
 
 // --- Lib ---
-import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
+import { handleImageUpload, MAX_FILE_SIZE } from "../../../lib/tiptap-utils";
 
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.scss";
 
-import content from "@/components/tiptap-templates/simple/data/content.json";
+import content from "../../tiptap-templates/simple/data/content.json";
 import { useNavigate, useParams } from "react-router-dom";
 import api from "../../../utils/Interceptor";
 import UserInfo from "../../../store";
@@ -189,11 +189,13 @@ export function SimpleEditor() {
   const { userInfo } = UserInfo();
   const navigate = useNavigate();
   const isMobile = useIsBreakpoint();
+  const [storyTitle, setStoryTitle] = useState("");
   const { height } = useWindowSize();
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
     "main",
   );
   const toolbarRef = useRef<HTMLDivElement>(null);
+  const [titleError] = useState(false);
   const editor = useEditor({
     immediatelyRender: false,
     editorProps: {
@@ -245,21 +247,60 @@ export function SimpleEditor() {
     }
   }, [isMobile, mobileView]);
 
-  const handleCreateEditBlog = async () => {
+  useEffect(() => {
+    if (!id || !editor) return;
+
+    const fetchBlog = async () => {
+      try {
+        const res = await api.get(`/get_single_blog/${id}`);
+
+        if (res?.data?.success) {
+          const blog = res?.data?.findBlog?.[0];
+
+          if (!blog) return;
+
+          setStoryTitle(blog.blog_title || "");
+
+          editor.commands.setContent(blog.content);
+        }
+      } catch (error) {
+        console.error("Failed to fetch blog:", error);
+      }
+    };
+
+    fetchBlog();
+  }, [id, editor]);
+
+  const handleCreateEditBlog = async (status: string) => {
     const editorContent = editor?.getJSON();
 
+    // for update content api call
     if (id) {
-      console.log("Updating post with content:", editorContent);
-      // TODO: Send editorContent to your API to update the blog post
+      const editBlogPatch = await api.patch(`/edit/${id}`, {
+        content: editorContent,
+        status,
+      });
+      if (editBlogPatch?.data?.success) {
+        toast.success("Story successfully update");
+        navigate("/admin/stories");
+        return;
+      } else {
+        return toast.error("Story are not update!");
+      }
       return;
     }
+
+    // for new created blog post api call
     const CreatePost = await api.post("/upload_blog", {
-      authorId: userInfo?.id,
+      authorid: userInfo?.id,
       content: editorContent,
+      status,
+      blog_title: storyTitle.trim(),
     });
+
     if (CreatePost?.data?.success) {
       toast.success(Texts.createEditPost.BlogSuccessToast);
-      navigate("/admin/posts");
+      navigate("/admin/stories");
     }
   };
 
@@ -268,17 +309,21 @@ export function SimpleEditor() {
       <EditorContext.Provider value={{ editor }}>
         <div className="sticky top-0 z-50 bg-white dark:bg-black">
           <div className="flex justify-end p-2">
-             <Button
-              onClick={handleCreateEditBlog}
+            <Button
+              disabled={!storyTitle.trim()}
+              onClick={() => handleCreateEditBlog("draft")}
               className="!min-w-[150px] cursor-pointer !bg-[#2b7fff] !text-white mr-3"
             >
               {Texts.createEditPost.saveAsDraft}
             </Button>
             <Button
-              onClick={handleCreateEditBlog}
+              disabled={!storyTitle.trim()}
+              onClick={() => handleCreateEditBlog("publish")}
               className="!min-w-[150px] cursor-pointer !bg-[#2b7fff] !text-white"
             >
-              {id ? Texts.createEditPost.updatePost : Texts.createEditPost.createPost}
+              {id
+                ? Texts.createEditPost.updatePost
+                : Texts.createEditPost.createPost}
             </Button>
           </div>
 
@@ -308,8 +353,12 @@ export function SimpleEditor() {
           </Toolbar>
         </div>
         <Input
-          placeholder={Texts.createEditPost.blogTitlePlaceholder}
-          className="mt-6 !text-2xl border-gray-100 placeholder:text-2xl border-t-0 border-x-0 rounded-none focus-visible:ring-0"
+          value={storyTitle}
+          placeholder="Story title..."
+          onChange={(e) => setStoryTitle(e.target.value)}
+          className={`mt-6 !text-2xl border-gray-100 placeholder:text-2xl border-t-0 border-x-0 rounded-none focus-visible:ring-0 ${
+            titleError ? "border-red-500" : ""
+          }`}
         />
         {/* Editor */}
         <EditorContent

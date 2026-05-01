@@ -230,9 +230,7 @@ const PostMangment = () => {
               <TableHead className="text-center font-semibold text-gray-700">
                 Engagement
               </TableHead>
-              <TableHead className="text-right font-semibold text-gray-700">
-                Actions
-              </TableHead>
+              <TableHead className="text-right font-semibold text-gray-700"></TableHead>
             </TableRow>
           </TableHeader>
 
@@ -274,7 +272,7 @@ const PostMangment = () => {
 
                   <TableCell>
                     <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold capitalize ${
                         post.status === "publish"
                           ? "bg-emerald-100 text-emerald-700"
                           : "bg-gray-100 text-gray-600"
