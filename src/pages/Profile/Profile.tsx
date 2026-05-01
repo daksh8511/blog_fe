@@ -113,11 +113,9 @@ const Profile = () => {
         <TabsContent value="about" className="py-8 max-w-2xl">
           <div className="space-y-6">
             <section className="space-y-2">
-              <h3 className="text-lg font-bold">Description</h3>
+              <h3 className="text-lg font-bold">About us</h3>
               <p className="text-muted-foreground leading-relaxed">
-                Hello! I'm a developer passionate about building beautiful interfaces. 
-                This blog is where I document my learning and share tutorials 
-                on how to use shadcn/ui and Tailwind CSS effectively.
+              {userInfo?.about_us}
               </p>
             </section>
             

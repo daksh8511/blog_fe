@@ -35,7 +35,7 @@ const Header = () => {
   ];
 
   const menus = [
-    { label: "Profile", url: "/4", icon: User },
+    { label: "Profile", url: userInfo?.id.toString(), icon: User },
     { label: "Stories", url: "/admin/stories", icon: FileText },
     { label: "Stats", url: "/admin/stats", icon: BarChart },
   ];
