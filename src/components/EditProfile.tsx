@@ -11,26 +11,19 @@ import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+import { Spinner } from "./ui/spinner";
+import type { FormikProps } from "formik";
 
-interface FormDataType {
-  name: string;
-  email: string;
-  about_us: string;
+interface EditProfileTypes{
+  formik : FormikProps<{name: string; email: string; about_us: string}>;
+  open : boolean;
+  setOpen : (value : boolean) => void;
+  loading : boolean
 }
 
-interface EditProfileType {
-  formData: FormDataType;
-  setFormData: React.Dispatch<React.SetStateAction<FormDataType>>;
-  handleSave: () => void;
-}
-
-const EditProfile = ({
-  formData,
-  setFormData,
-  handleSave,
-}: EditProfileType) => {
+const EditProfile = ({ formik, open, setOpen, loading } : EditProfileTypes) => {
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" className="rounded-full px-8">
           Edit Profile
@@ -43,45 +36,61 @@ const EditProfile = ({
             Make changes to your profile here. Click save when you're done.
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="name">Name</Label>
-            <Input
-              id="name"
-              value={formData.name.toString()}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-            />
+        <form onSubmit={formik.handleSubmit}>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">Name</Label>
+              <Input
+                id="name"
+                value={formik?.values?.name || ""}
+                name="name"
+                onChange={formik.handleChange}
+              />
+
+              {formik.touched.name && formik.errors.name && (
+                <p className="text-red-500 text-sm">{formik.errors.name}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                name="email"
+                value={formik.values.email}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+              />
+
+              {formik.touched.email && formik.errors.email && (
+                <p className="text-red-500 text-sm">{formik.errors.email}</p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="about">About</Label>
+              <Textarea
+                id="about"
+                name="about_us"
+                placeholder="Tell us about yourself"
+                value={formik.values.about_us}
+                onChange={formik.handleChange}
+                maxLength={500}
+              />
+            </div>
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              value={formData.email}
-              onChange={(e) =>
-                setFormData({ ...formData, email: e.target.value })
-              }
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="about">About</Label>
-            <Textarea
-              id="about"
-              placeholder="Tell us about yourself"
-              value={formData.about_us}
-              onChange={(e) =>
-                setFormData({ ...formData, about_us: e.target.value })
-              }
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button type="submit" onClick={handleSave}>
-            Save changes
-          </Button>
-        </DialogFooter>
+          <DialogFooter>
+            <Button type="submit" disabled={!formik.dirty || loading}>
+              {loading ? (
+                <div className="flex items-center gap-2">
+                  <Spinner className="h-4 w-4" />
+                  Saving...
+                </div>
+              ) : (
+                "Save changes"
+              )}
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );
