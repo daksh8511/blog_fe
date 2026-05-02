@@ -57,6 +57,7 @@ import { UndoRedoButton } from "../../tiptap-ui/undo-redo-button";
 import { ArrowLeftIcon } from "../../tiptap-icons/arrow-left-icon";
 import { HighlighterIcon } from "../../tiptap-icons/highlighter-icon";
 import { LinkIcon } from "../../tiptap-icons/link-icon";
+import { ImagePlus, X, Loader2 } from "lucide-react";
 
 // --- Hooks ---
 import { useIsBreakpoint } from "../../../hooks/use-is-breakpoint";
@@ -78,7 +79,10 @@ import api from "../../../utils/Interceptor";
 import UserInfo from "../../../store";
 import { toast } from "sonner";
 import { Input } from "../../ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../ui/select";
 import Texts from "../../../alltexts/Texts";
+
+const CATEGORIES = ["Technology", "Design", "Lifestyle", "Business", "Health", "Other"];
 
 const MainToolbarContent = ({
   onHighlighterClick,
@@ -189,7 +193,13 @@ export function SimpleEditor() {
   const { userInfo } = UserInfo();
   const navigate = useNavigate();
   const isMobile = useIsBreakpoint();
+  
+  // --- Enhanced State ---
   const [storyTitle, setStoryTitle] = useState("");
+  const [category, setCategory] = useState("other");
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
+
   const { height } = useWindowSize();
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
     "main",
@@ -247,57 +257,70 @@ export function SimpleEditor() {
     }
   }, [isMobile, mobileView]);
 
-  useEffect(() => {
-    if (!id || !editor) return;
+ useEffect(() => {
+  if (!id || !editor) return;
 
-    const fetchBlog = async () => {
-      try {
-        const res = await api.get(`/get_single_blog/${id}`);
+  const fetchBlog = async () => {
+    try {
+      const res = await api.get(`/get_single_blog/${id}`);
 
-        if (res?.data?.success) {
-          const blog = res?.data?.findBlog?.[0];
+      if (res?.data?.success) {
+        const blog = res?.data?.findBlog?.[0];
+        if (!blog) return;
 
-          if (!blog) return;
-
-          setStoryTitle(blog.blog_title || "");
-
-          editor.commands.setContent(blog.content);
-        }
-      } catch (error) {
-        console.error("Failed to fetch blog:", error);
+        setStoryTitle(blog.blog_title || "");
+        setCategory(blog.blog_category || "");
+        setCoverImage(blog.blog_cover_image || null);
+        editor.commands.setContent(blog.content);
       }
-    };
+    } catch (error) {
+      console.error("Failed to fetch blog:", error);
+    }
+  };
 
-    fetchBlog();
-  }, [id, editor]);
+  fetchBlog();
+}, [id, editor]);
+
+  // Handle Cover Upload
+  const handleCoverChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setIsUploadingCover(true);
+      try {
+        const url = await handleImageUpload(file);
+        setCoverImage(url);
+        toast.success("Cover image uploaded");
+      } catch (error) {
+        toast.error("Upload failed");
+      } finally {
+        setIsUploadingCover(false);
+      }
+    }
+  };
 
   const handleCreateEditBlog = async (status: string) => {
     const editorContent = editor?.getJSON();
-
-    // for update content api call
-    if (id) {
-      const editBlogPatch = await api.patch(`/edit/${id}`, {
-        content: editorContent,
-        status,
-      });
-      if (editBlogPatch?.data?.success) {
-        toast.success("Story successfully update");
-        navigate("/admin/stories");
-        return;
-      } else {
-        return toast.error("Story are not update!");
-      }
-      return;
-    }
-
-    // for new created blog post api call
-    const CreatePost = await api.post("/upload_blog", {
+    const blogData = {
       authorid: userInfo?.id,
       content: editorContent,
       status,
       blog_title: storyTitle.trim(),
-    });
+      blog_category: category,
+      blog_cover_image: coverImage || ""
+    };
 
+    if (id) {
+      const editBlogPatch = await api.patch(`/edit/${id}`, blogData);
+      if (editBlogPatch?.data?.success) {
+        toast.success("Story successfully updated");
+        navigate("/admin/stories");
+      } else {
+        toast.error("Update failed");
+      }
+      return;
+    }
+
+    const CreatePost = await api.post("/upload_blog", blogData);
     if (CreatePost?.data?.success) {
       toast.success(Texts.createEditPost.BlogSuccessToast);
       navigate("/admin/stories");
@@ -305,38 +328,43 @@ export function SimpleEditor() {
   };
 
   return (
-    <div className="simple-editor-wrapper">
+    <div className="simple-editor-wrapper bg-white dark:bg-black min-h-screen">
       <EditorContext.Provider value={{ editor }}>
-        <div className="sticky top-0 z-50 bg-white dark:bg-black">
-          <div className="flex justify-end p-2">
-            <Button
-              disabled={!storyTitle.trim()}
-              onClick={() => handleCreateEditBlog("draft")}
-              className="!min-w-[150px] cursor-pointer !bg-[#2b7fff] !text-white mr-3"
-            >
-              {Texts.createEditPost.saveAsDraft}
-            </Button>
-            <Button
-              disabled={!storyTitle.trim()}
-              onClick={() => handleCreateEditBlog("publish")}
-              className="!min-w-[150px] cursor-pointer !bg-[#2b7fff] !text-white"
-            >
-              {id
-                ? Texts.createEditPost.updatePost
-                : Texts.createEditPost.createPost}
-            </Button>
+        
+        {/* Header Actions */}
+        <div className="sticky top-0 z-50 bg-white dark:bg-black border-b dark:border-gray-800">
+          <div className="flex justify-between items-center max-w-4xl mx-auto p-4">
+             <Button
+                 variant="ghost"
+                 onClick={() => navigate("/admin/stories")}
+                 className="cursor-pointer"
+             >
+                 Cancel
+             </Button>
+             <div className="flex gap-3">
+                <Button
+                    disabled={!storyTitle.trim()}
+                    variant="ghost"
+                    onClick={() => handleCreateEditBlog("draft")}
+                    className="cursor-pointer"
+                >
+                    {Texts.createEditPost.saveAsDraft}
+                </Button>
+                <Button
+                    disabled={!storyTitle.trim() || !category || !coverImage || editor?.isEmpty}
+                    onClick={() => handleCreateEditBlog("publish")}
+                    className="!bg-[#2b7fff] !text-white rounded-full px-6"
+                >
+                    {id ? Texts.createEditPost.updatePost : "Publish"}
+                </Button>
+             </div>
           </div>
 
           {/* Toolbar */}
           <Toolbar
             ref={toolbarRef}
-            style={{
-              ...(isMobile
-                ? {
-                    bottom: `calc(100% - ${height - rect.y}px)`,
-                  }
-                : {}),
-            }}
+            className="border-t dark:border-gray-800"
+            style={isMobile ? { bottom: `calc(100% - ${height - rect.y}px)` } : {}}
           >
             {mobileView === "main" ? (
               <MainToolbarContent
@@ -352,21 +380,83 @@ export function SimpleEditor() {
             )}
           </Toolbar>
         </div>
-        <Input
-          value={storyTitle}
-          placeholder="Story title..."
-          onChange={(e) => setStoryTitle(e.target.value)}
-          className={`mt-6 !py-7 !text-2xl border-gray-100 placeholder:text-2xl border-t-0 border-x-0 rounded-none focus-visible:ring-0 ${
-            titleError ? "border-red-500" : ""
-          }`}
-        />
-        {/* Editor */}
-        <EditorContent
-          editor={editor}
-          role="presentation"
-          className="simple-editor-content"
-        />
+
+        {/* Content Area */}
+        <div className=" px-4 py-8 space-y-6">
+          
+          {/* Cover Image Upload UI */}
+          <div className="relative group w-full h-64 bg-gray-50 dark:bg-gray-900 rounded-xl overflow-hidden border-2 border-dashed border-gray-200 dark:border-gray-800 flex items-center justify-center transition-all hover:border-gray-300">
+            {coverImage ? (
+              <>
+                <img src={coverImage} alt="Cover" className="w-full h-full object-cover" />
+                <button 
+                  onClick={() => setCoverImage(null)}
+                  className="absolute top-4 right-4 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full backdrop-blur-md"
+                >
+                  <X size={18} />
+                </button>
+              </>
+            ) : (
+              <label className="flex flex-col items-center cursor-pointer space-y-2">
+                {isUploadingCover ? (
+                    <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+                ) : (
+                    <>
+                        <ImagePlus size={40} className="text-gray-300" />
+                        <span className="text-sm text-gray-400 font-medium">Add a cover image</span>
+                    </>
+                )}
+                <input type="file" className="hidden" accept="image/*" onChange={handleCoverChange} />
+              </label>
+            )}
+          </div>
+
+          {/* Topic Category Select */}
+          <div className="w-fit">
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="border-none bg-transparent shadow-none p-0 text-blue-600 font-medium h-auto focus:ring-0">
+                <SelectValue placeholder="Add a topic..." />
+              </SelectTrigger>
+              <SelectContent>
+                {CATEGORIES.map((cat) => (
+                  <SelectItem key={cat} value={cat.toLowerCase()}>{cat}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Title */}
+          <Input
+            value={storyTitle}
+            placeholder="New story title"
+            onChange={(e) => setStoryTitle(e.target.value)}
+            className={`!text-5xl !font-bold !h-auto !py-2 border-none rounded-none focus-visible:ring-0 px-0 placeholder:text-gray-200 dark:placeholder:text-gray-800 ${
+                titleError ? "border-red-500" : ""
+            }`}
+          />
+
+          {/* Editor Body */}
+          <EditorContent
+            editor={editor}
+            role="presentation"
+            className="simple-editor-content prose prose-lg dark:prose-invert max-w-none"
+          />
+        </div>
       </EditorContext.Provider>
+
+      <style>{`
+        .simple-editor-content .tiptap {
+            outline: none !important;
+            min-height: 400px;
+        }
+        .simple-editor-content .tiptap p.is-editor-empty:first-child::before {
+            content: attr(data-placeholder);
+            float: left;
+            color: #adb5bd;
+            pointer-events: none;
+            height: 0;
+        }
+      `}</style>
     </div>
   );
 }
