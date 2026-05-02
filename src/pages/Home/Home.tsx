@@ -2,62 +2,63 @@ import LandingPageBlog from "./Components/LandingPageBlog";
 import { Badge } from "../../components/ui/badge";
 import TrendingNow from "./Components/TrendingNow";
 import Categories from "./Components/Categories";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import cate1 from "../../../public/cate1.jpg";
-import cate2 from "../../../public/cate2.jpg";
-import cate3 from "../../../public/cate3.jpg";
+import api from "../../utils/Interceptor";
+import { Spinner } from "../../components/ui/spinner";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
-  const [latestThinking] = useState([
-    {
-      id: 1,
-      title: "Digital Sobriety in the Age of Noise",
-      image: cate1,
-      topic_related: "TECH",
-      description:
-        "How high-performers are leveraging silence as a competitive advantage in global markets.",
-      user: {
-        avatar: "",
-        name: "Marcus thomas",
-        reading_duration: "8 min",
-      },
-    },
-    {
-      id: 2,
-      title: "The Architecture of Intellectual Rigor",
-      topic_related: "CULTURE",
-      image: cate2,
-      description:
-        "Revisiting the philosophical foundations of European urbanism and its impact on modern",
-      user: {
-        avatar: "",
-        name: "Elena vance",
-        reading_duration: "12 min",
-      },
-    },
-    {
-      id: 3,
-      title: "Ethics in Generative Aesthetics",
-      topic_related: "DESIGN",
-      image: cate3,
-      description:
-        "A deep dive into the moral implications of AI-driven creative workflows and the future of human authorship.",
-      user: {
-        avatar: "",
-        name: "Dr. Julian Gray",
-        reading_duration: "15 min",
-      },
-    },
-  ]);
+  const [topTrendingBlog, setTopTrendingBlog] = useState([]);
+  const [trendingBlogs, setTrendingPosts] = useState([])
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate()
+  const fetchBlogs = async () => {
+  setLoading(true);
+
+  try {
+    const response = await api.get("/get_home_blogs");
+
+    if (response?.data?.success) {
+      const blogsData = response?.data?.getBlogs || [];
+
+      const sortedBlogs = [...blogsData].sort(
+        (a, b) => b.blog_views - a.blog_views
+      );
+
+      const topBlog = sortedBlogs[0];
+      setTopTrendingBlog(topBlog);
+
+      const remainingBlogs = sortedBlogs.slice(1);
+
+      setTrendingPosts(remainingBlogs);
+    }
+  } catch (error) {
+    console.error("Error : ", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  useEffect(() => {
+    fetchBlogs();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
   return (
     <div>
-      <LandingPageBlog />
+      <LandingPageBlog data={topTrendingBlog} />
 
       <div className="block lg:flex justify-between my-10">
         {/* left side */}
@@ -73,27 +74,25 @@ const Home = () => {
               })}
             </div>
           </div>
-          <div className="block lg:flex gap-4 mt-5">
-            {latestThinking
-              ?.filter((blogs) => blogs.id !== 3)
-              .map((blog) => {
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mt-5">
+            {trendingBlogs.map((blog) => {
                 return (
-                  <div className="mb-4">
+                  <div key={blog?.blogid} className="mb-4" onClick={() => navigate(`/blog/${blog?.blogid}`)}>
                     <Card className="relative mx-auto w-full max-w-sm pt-0">
                       <div className="absolute inset-0 z-30 aspect-video" />
                       <img
-                        src={blog?.image}
+                        src={blog?.blog_cover_image}
                         alt="Event cover"
                         className="relative z-20 aspect-video w-full"
                       />
                       <CardHeader>
-                        <Badge>{blog?.topic_related}</Badge>
-                        <CardTitle className="my-2">{blog?.title}</CardTitle>
-                        <CardDescription>{blog?.description}</CardDescription>
+                        <Badge>{blog?.blog_category}</Badge>
+                        <CardTitle className="my-2 line-clamp-2 text-ellipsis">{blog?.blog_title}</CardTitle>
+                        <CardDescription>{blog?.blog_short_description}</CardDescription>
                         <div className="flex justify-between mt-5">
-                          <h4>{blog?.user?.name}</h4>
+                          <h4>{blog?.user?.name || "John Doe"}</h4>
                           <h4 className="text-gray-500">
-                            {blog?.user?.reading_duration}
+                            {blog?.user?.reading_duration || '5 min'}
                           </h4>
                         </div>
                       </CardHeader>
@@ -103,13 +102,13 @@ const Home = () => {
               })}
           </div>
 
-          <div>
+          {/* <div>
             {latestThinking
               ?.filter((blogs) => blogs?.id === 3)
               .map((blog) => {
                 return (
                   <div className="flex gap-2 items-center bg-gray-50 rounded-2xl">
-                    <div  className="w-[50%] rounded-tl-2xl rounded-bl-2xl">
+                    <div className="w-[50%] rounded-tl-2xl rounded-bl-2xl">
                       <img
                         src={blog?.image}
                         className="w-full rounded-tl-2xl rounded-bl-2xl"
@@ -131,7 +130,7 @@ const Home = () => {
                   </div>
                 );
               })}
-          </div>
+          </div> */}
         </div>
         {/* right side */}
         <div className="lg:w-[40%] w-full px-5">
