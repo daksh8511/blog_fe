@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Avatar,
   AvatarFallback,
@@ -18,6 +18,9 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import api from "../../utils/Interceptor";
 import { toast } from "sonner";
+import Aboutus from "../../components/Profile/Aboutus";
+import SavedBlog from "../../components/Profile/SavedBlog";
+import SelfCreatedBlog from "../../components/Profile/SelfCreatedBlog";
 
 const Profile = () => {
   const params = useParams();
@@ -26,6 +29,8 @@ const Profile = () => {
   const [isFollowing, setIsFollowing] = useState(false);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [savedBlogs, setSavedBlogs] = useState([]);
+  const [blogs, setBlogs] = useState([]);
 
   const formik = useFormik({
     initialValues: {
@@ -78,26 +83,22 @@ const Profile = () => {
       setLoading(false);
     }
   };
-  const blogs = [
-    {
-      id: 1,
-      title: "Building Scalable Apps with Next.js 14",
-      date: "2 days ago",
-      views: "1.2K views",
-    },
-    {
-      id: 2,
-      title: "Why I switched to Tailwind CSS",
-      date: "1 week ago",
-      views: "850 views",
-    },
-    {
-      id: 3,
-      title: "Modern State Management in 2024",
-      date: "2 weeks ago",
-      views: "3.4K views",
-    },
-  ];
+
+  const fetchSavedBlogs = async () => {
+    try {
+      const response = await api.get(`/get_profile/${userInfo?.id}`);
+      if (response?.data?.success) {
+        setSavedBlogs(response?.data?.savedBlogs);
+        setBlogs(response?.data?.getCreatedBlogs);
+      }
+    } catch (error) {
+      console.error("Error : ", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSavedBlogs();
+  }, []);
 
   return (
     <div className="max-w-5xl mx-auto p-4 md:p-8 space-y-8">
@@ -118,7 +119,7 @@ const Profile = () => {
             <span>•</span>
             <span>{userInfo?.followers} followers</span>
             <span>•</span>
-            <span>48 blogs</span>
+            <span>{blogs?.length} blogs</span>
           </div>
           <p className="mt-3 text-muted-foreground max-w-xl line-clamp-2">
             {isSelfProfile
@@ -165,6 +166,12 @@ const Profile = () => {
             Blogs
           </TabsTrigger>
           <TabsTrigger
+            value="saved"
+            className="rounded-none border-t-0 border-x-0 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3 px-1 font-semibold"
+          >
+            Saved
+          </TabsTrigger>
+          <TabsTrigger
             value="about"
             className="rounded-none border-t-0 border-x-0 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent pb-3 px-1 font-semibold"
           >
@@ -174,57 +181,17 @@ const Profile = () => {
 
         {/* Blogs Content */}
         <TabsContent value="blogs" className="py-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {blogs.map((blog) => (
-              <div key={blog.id} className="group cursor-pointer space-y-3">
-                {/* Thumbnail Aspect Ratio */}
-                <div className="aspect-video bg-muted rounded-xl overflow-hidden border border-border group-hover:opacity-80 transition-opacity flex items-center justify-center text-muted-foreground">
-                  Thumbnail
-                </div>
-                <div className="space-y-1">
-                  <h3 className="font-bold leading-tight group-hover:text-primary transition-colors">
-                    {blog.title}
-                  </h3>
-                  <div className="text-xs text-muted-foreground">
-                    {blog.views} • {blog.date}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+         <SelfCreatedBlog blogs={blogs} />
+        </TabsContent>
+
+        {/* Saved blogs Content */}
+        <TabsContent value="saved" className="py-6">
+            <SavedBlog savedBlogs={savedBlogs} />
         </TabsContent>
 
         {/* About Us Content */}
         <TabsContent value="about" className="py-8 max-w-2xl">
-          <div className="space-y-6">
-            <section className="space-y-2">
-              <h3 className="text-lg font-bold">About us</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                {userInfo?.about_us}
-              </p>
-            </section>
-
-            <section className="space-y-2">
-              <h3 className="text-lg font-bold">Details</h3>
-              <div className="text-sm space-y-1">
-                <p>
-                  <span className="text-muted-foreground">Location:</span>{" "}
-                  United States
-                </p>
-                <p>
-                  <span className="text-muted-foreground">Joined:</span>{" "}
-                  {userInfo?.create_at ? new Date(userInfo.create_at).toLocaleString("en-US", {
-                    month: "long",
-                    year: "numeric",
-                  }) : "Unknown"}
-                </p>
-                <p>
-                  <span className="text-muted-foreground">Email:</span>{" "}
-                  {userInfo?.email}
-                </p>
-              </div>
-            </section>
-          </div>
+          <Aboutus userInfo={userInfo} />
         </TabsContent>
       </Tabs>
     </div>
