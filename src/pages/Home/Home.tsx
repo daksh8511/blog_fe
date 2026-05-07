@@ -86,7 +86,7 @@ const Home = () => {
                         className="relative z-20 aspect-video w-full"
                       />
                       <CardHeader>
-                        <Badge>{blog?.blog_category}</Badge>
+                        <Badge className="capitalize">{blog?.blog_category}</Badge>
                         <CardTitle className="my-2 line-clamp-2 text-ellipsis">{blog?.blog_title}</CardTitle>
                         <CardDescription>{blog?.blog_short_description}</CardDescription>
                         <div className="flex justify-between mt-5">

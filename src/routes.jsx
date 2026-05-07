@@ -47,11 +47,7 @@ export const router = createBrowserRouter([
       },
       {
         path: "blog/:id",
-        element: (
-          <ProtectedRoute type="private">
-            <Blog />
-          </ProtectedRoute>
-        ),
+        element: <Blog />,
       },
       {
         path: "admin",
